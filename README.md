@@ -1,5 +1,9 @@
 # 경기도의회 회의록 요약 앱
 
+[![Deployed on Vercel](https://img.shields.io/badge/Vercel-live-black)](https://gg-council-minutes.vercel.app)
+
+**Live**: https://gg-council-minutes.vercel.app
+
 경기도의회 상임위 전자회의록과 영상회의록을 가져와 Claude API 로 요약 정리하는 Next.js 웹 앱.
 
 요약 결과는 다음을 포함합니다:
