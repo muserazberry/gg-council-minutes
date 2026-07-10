@@ -7,11 +7,13 @@ export default function AddMeetingForm() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const router = useRouter();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+    setErrorCode(null);
     setBusy(true);
     try {
       const crawlRes = await fetch("/api/crawl", {
@@ -20,7 +22,10 @@ export default function AddMeetingForm() {
         body: JSON.stringify({ input }),
       });
       const crawl = await crawlRes.json();
-      if (!crawlRes.ok) throw new Error(crawl.error ?? "크롤링 실패");
+      if (!crawlRes.ok) {
+        if (crawl.code) setErrorCode(crawl.code);
+        throw new Error(crawl.error ?? "크롤링 실패");
+      }
 
       setMsg(`회의록 가져옴: ${crawl.title} (요약 진행 중…)`);
 
@@ -36,7 +41,7 @@ export default function AddMeetingForm() {
       router.push(`/meeting/${crawl.mntsId}`);
       router.refresh();
     } catch (e: any) {
-      setMsg(`오류: ${e.message}`);
+      setMsg(e.message);
     } finally {
       setBusy(false);
     }
@@ -70,9 +75,25 @@ export default function AddMeetingForm() {
         </button>
       </form>
       {msg && (
-        <p className="mt-3 text-xs sm:text-sm text-gray-700 break-words">
+        <div
+          className={`mt-3 rounded p-3 text-xs sm:text-sm break-words ${
+            errorCode
+              ? "border border-amber-300 bg-amber-50 text-amber-900"
+              : "text-gray-700"
+          }`}
+        >
           {msg}
-        </p>
+          {errorCode === "geo_blocked" && (
+            <div className="mt-2 text-[11px] sm:text-xs text-amber-800">
+              💡 로컬 PC(한국 가정용 IP)에서 다음 명령 실행:
+              <pre className="mt-1 rounded bg-white/60 px-2 py-1 overflow-x-auto">
+{`cd gg-council-minutes
+npm run crawl:recent`}
+              </pre>
+              수집된 회의록은 이 페이지에도 자동 표시됩니다.
+            </div>
+          )}
+        </div>
       )}
     </section>
   );
