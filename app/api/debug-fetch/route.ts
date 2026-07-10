@@ -41,7 +41,18 @@ export async function GET() {
   });
   const buf = await res.arrayBuffer();
   const asUtf8 = new TextDecoder("utf-8").decode(buf);
+  // 우리 함수가 어디서 실행 중인지 확인용
+  let outboundIp: string | null = null;
+  try {
+    const ipRes = await fetch("https://api.ipify.org?format=json", {
+      cache: "no-store",
+    });
+    outboundIp = (await ipRes.json()).ip;
+  } catch {}
+
   return NextResponse.json({
+    vercelRegion: process.env.VERCEL_REGION ?? "(unset)",
+    outboundIp,
     listStatus: listRes.status,
     cookieJar: cookieJar.slice(0, 200),
     status: res.status,
