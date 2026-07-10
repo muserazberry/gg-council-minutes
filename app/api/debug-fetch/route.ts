@@ -61,7 +61,14 @@ export async function GET() {
     contentType: res.headers.get("content-type"),
     server: res.headers.get("server"),
     utf8Preview: asUtf8.slice(0, 600),
+    utf8Tail: asUtf8.slice(-800),
     hasViewerId: asUtf8.includes("mntshtmlviewer"),
     hasContent: asUtf8.includes("경제노동위원회") || asUtf8.includes("위원장"),
+    setCookieRaw: setCookies.slice(0, 400),
+    respHeaders: {
+      cacheCtrl: res.headers.get("cache-control"),
+      xFrame: res.headers.get("x-frame-options"),
+      location: res.headers.get("location"),
+    },
   });
 }
