@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
-import { COMMITTEES } from "@/lib/committees";
+import {
+  STANDING_COMMITTEES,
+  SPECIAL_COMMITTEES,
+} from "@/lib/committees";
 import { listRecentMeetings } from "@/lib/repository";
 import AddMeetingForm from "./_components/AddMeetingForm";
+import type { Committee } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -28,37 +32,31 @@ export default async function HomePage({
     <div className="space-y-6 sm:space-y-8">
       <section>
         <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">
-          상임위원회
+          위원회
         </h1>
         <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-          상임위를 선택해 요약된 회의록을 확인하세요.
+          위원회를 선택해 요약된 회의록을 확인하세요.
         </p>
-        {/* 모바일에서 좌우 스크롤 대신 wrap. 칩 폰트/패딩 축소. */}
-        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+
+        <div className="mb-2 flex flex-wrap gap-1.5 sm:gap-2">
           <Link
             href="/"
-            className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm border ${
-              !committee
-                ? "bg-black text-white border-black"
-                : "bg-white text-gray-700"
-            }`}
+            className={chipClass(!committee)}
           >
             전체
           </Link>
-          {COMMITTEES.map((c) => (
-            <Link
-              key={c.code}
-              href={`/?committee=${c.code}`}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm border ${
-                committee === c.code
-                  ? "bg-black text-white border-black"
-                  : "bg-white text-gray-700"
-              }`}
-            >
-              {c.shortName}
-            </Link>
-          ))}
         </div>
+
+        <CommitteeGroup
+          label="상임위원회"
+          items={STANDING_COMMITTEES}
+          selected={committee}
+        />
+        <CommitteeGroup
+          label="특별위원회"
+          items={SPECIAL_COMMITTEES}
+          selected={committee}
+        />
       </section>
 
       <AddMeetingForm />
@@ -103,6 +101,41 @@ export default async function HomePage({
           </ul>
         )}
       </section>
+    </div>
+  );
+}
+
+function chipClass(active: boolean) {
+  return `px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm border ${
+    active ? "bg-black text-white border-black" : "bg-white text-gray-700"
+  }`;
+}
+
+function CommitteeGroup({
+  label,
+  items,
+  selected,
+}: {
+  label: string;
+  items: Committee[];
+  selected?: string;
+}) {
+  return (
+    <div className="mt-3">
+      <div className="text-[11px] sm:text-xs text-gray-500 mb-1.5 font-medium">
+        {label}
+      </div>
+      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+        {items.map((c) => (
+          <Link
+            key={c.code}
+            href={`/?committee=${c.code}`}
+            className={chipClass(selected === c.code)}
+          >
+            {c.shortName}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }
