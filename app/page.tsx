@@ -6,6 +6,7 @@ import {
 } from "@/lib/committees";
 import { listRecentMeetings } from "@/lib/repository";
 import AddMeetingForm from "./_components/AddMeetingForm";
+import DeleteMeetingButton from "./_components/DeleteMeetingButton";
 import type { Committee } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -81,21 +82,27 @@ export default async function HomePage({
           <ul className="divide-y border rounded bg-white">
             {meetings.map((m) => (
               <li key={m.mntsId} className="p-3 sm:p-4 hover:bg-gray-50">
-                <Link href={`/meeting/${m.mntsId}`} className="block">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-gray-500 mb-1">
-                    <span>{m.committeeName}</span>
-                    <span>·</span>
-                    <span>{m.date || "날짜 미상"}</span>
-                    {m.summarizedAt && (
-                      <span className="sm:ml-auto text-green-700 font-medium">
-                        요약됨
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-sm sm:text-base font-medium break-keep">
-                    {m.title}
-                  </div>
-                </Link>
+                <div className="flex items-start gap-2">
+                  <Link
+                    href={`/meeting/${m.mntsId}`}
+                    className="block flex-1 min-w-0"
+                  >
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-gray-500 mb-1">
+                      <span>{m.committeeName}</span>
+                      <span>·</span>
+                      <span>{m.date || "날짜 미상"}</span>
+                      {m.summarizedAt && (
+                        <span className="sm:ml-auto text-green-700 font-medium">
+                          요약됨
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm sm:text-base font-medium break-keep">
+                      {m.title}
+                    </div>
+                  </Link>
+                  <DeleteMeetingButton mntsId={m.mntsId} />
+                </div>
               </li>
             ))}
           </ul>

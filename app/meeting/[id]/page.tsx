@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getMeeting } from "@/lib/repository";
 import SummarizeButton from "./SummarizeButton";
+import DeleteMeetingButton from "@/app/_components/DeleteMeetingButton";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +126,14 @@ export default async function MeetingDetailPage({
           </Section>
         </>
       )}
+
+      <div className="pt-2 flex justify-end">
+        <DeleteMeetingButton
+          mntsId={meeting.mntsId}
+          label="이 회의록 삭제"
+          redirectTo="/"
+        />
+      </div>
     </article>
   );
 }
