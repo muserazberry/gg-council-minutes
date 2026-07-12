@@ -53,7 +53,17 @@ export default function AddMeetingForm() {
         회의록 추가
       </h2>
       <p className="text-xs sm:text-sm text-gray-600 mb-3">
-        kms.ggc.go.kr 뷰어 URL 또는 <code>mntsId</code> 값을 붙여넣으세요.
+        <a
+          href="https://kms.ggc.go.kr/svc/cms/mnts/MntsLatelyList.do"
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-600 hover:underline font-medium"
+        >
+          경기도의회 회의록 ↗
+        </a>
+        <span className="ml-1">
+          에서 뷰어 URL 또는 <code>mntsId</code> 값을 복사해 붙여넣으세요.
+        </span>
       </p>
       <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2">
         <input
