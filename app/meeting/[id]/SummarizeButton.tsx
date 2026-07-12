@@ -32,11 +32,15 @@ export default function SummarizeButton({ mntsId }: { mntsId: string }) {
       <button
         onClick={run}
         disabled={busy}
-        className="rounded bg-black text-white px-4 py-2 text-sm disabled:opacity-50"
+        className="rounded-krds bg-krds-primary-50 text-white px-4 py-2.5 text-sm font-bold hover:bg-krds-primary-60 disabled:bg-krds-gray-30 disabled:cursor-not-allowed transition-colors"
       >
         {busy ? "요약 중…" : "지금 요약하기"}
       </button>
-      {err && <p className="mt-2 text-sm text-red-600">오류: {err}</p>}
+      {err && (
+        <p className="mt-2 text-sm text-krds-danger-60" role="alert">
+          오류: {err}
+        </p>
+      )}
     </div>
   );
 }

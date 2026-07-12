@@ -18,20 +18,25 @@ export default async function MeetingDetailPage({
 
   return (
     <article className="space-y-5 sm:space-y-6">
-      <div>
-        <Link href="/" className="text-xs sm:text-sm text-gray-500 hover:underline">
-          ← 목록으로
+      <header className="rounded-krds border border-krds-gray-10 bg-white p-4 sm:p-5">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1 text-xs sm:text-sm text-krds-gray-60 hover:text-krds-primary-60 hover:underline"
+        >
+          <span aria-hidden="true">←</span> 목록으로
         </Link>
-        <h1 className="text-lg sm:text-2xl font-bold mt-2 break-keep leading-snug">
+        <h1 className="text-lg sm:text-2xl font-bold mt-2 break-keep leading-snug text-krds-gray-90">
           {meeting.title}
         </h1>
-        <div className="text-xs sm:text-sm text-gray-600 mt-2 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-1">
-          <span>{meeting.committeeName}</span>
+        <div className="text-xs sm:text-sm text-krds-gray-60 mt-3 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-1 items-center">
+          <span className="inline-flex items-center rounded-krds bg-krds-primary-5 text-krds-primary-60 px-2 py-0.5 font-medium">
+            {meeting.committeeName}
+          </span>
           <span>{meeting.date || "날짜 미상"}</span>
           {meeting.session && <span>제{meeting.session}회</span>}
           {meeting.round && <span>제{meeting.round}차</span>}
           <a
-            className="text-blue-600 hover:underline sm:ml-auto"
+            className="text-krds-primary-60 hover:text-krds-primary-70 hover:underline sm:ml-auto font-medium"
             href={meeting.sourceUrl}
             target="_blank"
             rel="noreferrer"
@@ -39,11 +44,11 @@ export default async function MeetingDetailPage({
             원본 회의록 ↗
           </a>
         </div>
-      </div>
+      </header>
 
       {!s && (
-        <section className="rounded border bg-white p-4">
-          <p className="text-sm text-gray-700 mb-3">
+        <section className="rounded-krds border border-krds-gray-10 bg-white p-4 sm:p-5">
+          <p className="text-sm text-krds-gray-70 mb-3">
             아직 요약되지 않은 회의록입니다.
           </p>
           <SummarizeButton mntsId={meeting.mntsId} />
@@ -61,7 +66,7 @@ export default async function MeetingDetailPage({
           <Section title={`출석 의원 (${s.attendees.length}명)`}>
             <p className="text-sm">{s.attendees.join(", ") || "—"}</p>
             {s.absentees && s.absentees.length > 0 && (
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-krds-gray-60 mt-2">
                 불참: {s.absentees.join(", ")}
               </p>
             )}
@@ -78,17 +83,24 @@ export default async function MeetingDetailPage({
           <Section title="의원별 핵심 발언">
             <ul className="space-y-3">
               {s.memberStatements.map((ms, i) => (
-                <li key={i} className="border rounded p-2.5 sm:p-3">
-                  <div className="text-sm font-medium flex flex-wrap gap-x-2">
+                <li
+                  key={i}
+                  className="border border-krds-gray-10 rounded-krds p-3 bg-krds-gray-5"
+                >
+                  <div className="text-sm font-bold flex flex-wrap gap-x-2 text-krds-gray-90">
                     <span>{ms.name}</span>
                     {ms.role && (
-                      <span className="text-gray-500">({ms.role})</span>
+                      <span className="text-krds-gray-60 font-medium">
+                        ({ms.role})
+                      </span>
                     )}
                     {ms.party && (
-                      <span className="text-gray-400">· {ms.party}</span>
+                      <span className="text-krds-gray-50 font-normal">
+                        · {ms.party}
+                      </span>
                     )}
                   </div>
-                  <ul className="list-disc pl-5 mt-1 text-sm text-gray-800 space-y-0.5 break-keep">
+                  <ul className="list-disc pl-5 mt-1.5 text-sm text-krds-gray-80 space-y-0.5 break-keep">
                     {ms.keyPoints.map((k, j) => (
                       <li key={j}>{k}</li>
                     ))}
@@ -99,11 +111,18 @@ export default async function MeetingDetailPage({
           </Section>
 
           <Section title="쟁점">
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {s.keyIssues.map((k, i) => (
-                <li key={i}>
-                  <div className="font-medium text-sm">{k.topic}</div>
-                  <div className="text-sm text-gray-700">{k.description}</div>
+                <li
+                  key={i}
+                  className="border-l-4 border-krds-primary-50 pl-3 py-0.5"
+                >
+                  <div className="font-bold text-sm text-krds-gray-90">
+                    {k.topic}
+                  </div>
+                  <div className="text-sm text-krds-gray-70 mt-1">
+                    {k.description}
+                  </div>
                 </li>
               ))}
             </ul>
@@ -146,9 +165,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded border bg-white p-3 sm:p-4">
-      <h2 className="font-semibold mb-2 text-sm sm:text-base">{title}</h2>
-      <div className="text-sm break-keep">{children}</div>
+    <section className="rounded-krds border border-krds-gray-10 bg-white p-4 sm:p-5">
+      <h2 className="font-bold mb-3 text-sm sm:text-base text-krds-gray-90 pb-2 border-b border-krds-gray-10">
+        {title}
+      </h2>
+      <div className="text-sm break-keep text-krds-gray-80">{children}</div>
     </section>
   );
 }

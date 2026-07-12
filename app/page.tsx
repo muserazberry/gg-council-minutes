@@ -16,7 +16,7 @@ export default async function HomePage({
 }: {
   searchParams: { committee?: string };
 }) {
-  noStore(); // 새 회의록 추가 후 즉시 반영되도록 캐시 완전 무효화
+  noStore();
   const committee = searchParams.committee;
   let meetings: Awaited<ReturnType<typeof listRecentMeetings>> = [];
   let dbError: string | null = null;
@@ -31,19 +31,16 @@ export default async function HomePage({
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      <section>
-        <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">
+      <section className="rounded-krds border border-krds-gray-10 bg-white p-4 sm:p-5">
+        <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 text-krds-gray-90">
           위원회
         </h1>
-        <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+        <p className="text-xs sm:text-sm text-krds-gray-60 mb-3 sm:mb-4">
           위원회를 선택해 요약된 회의록을 확인하세요.
         </p>
 
         <div className="mb-2 flex flex-wrap gap-1.5 sm:gap-2">
-          <Link
-            href="/"
-            className={chipClass(!committee)}
-          >
+          <Link href="/" className={chipClass(!committee)}>
             전체
           </Link>
         </div>
@@ -63,9 +60,14 @@ export default async function HomePage({
       <AddMeetingForm />
 
       <section>
-        <h2 className="text-lg sm:text-xl font-semibold mb-3">최근 회의록</h2>
+        <h2 className="text-lg sm:text-xl font-bold mb-3 text-krds-gray-90">
+          최근 회의록
+        </h2>
         {dbError && (
-          <div className="rounded border border-amber-300 bg-amber-50 p-3 text-xs sm:text-sm text-amber-800 break-words">
+          <div
+            className="rounded-krds border border-krds-danger-50 bg-krds-danger-5 p-3 text-xs sm:text-sm text-krds-danger-60 break-words"
+            role="alert"
+          >
             DB 연결 실패: {dbError}
             <br />
             .env 의 Supabase 키를 설정한 뒤 supabase/schema.sql 을 실행했는지
@@ -73,31 +75,34 @@ export default async function HomePage({
           </div>
         )}
         {!dbError && meetings.length === 0 && (
-          <div className="rounded border bg-white p-4 sm:p-6 text-xs sm:text-sm text-gray-500">
+          <div className="rounded-krds border border-krds-gray-10 bg-white p-4 sm:p-6 text-xs sm:text-sm text-krds-gray-50">
             아직 등록된 회의록이 없습니다. 위의 입력창에서 mntsId 또는 회의록
             URL 을 추가해 주세요.
           </div>
         )}
         {meetings.length > 0 && (
-          <ul className="divide-y border rounded bg-white">
+          <ul className="divide-y divide-krds-gray-10 border border-krds-gray-10 rounded-krds bg-white overflow-hidden">
             {meetings.map((m) => (
-              <li key={m.mntsId} className="p-3 sm:p-4 hover:bg-gray-50">
+              <li
+                key={m.mntsId}
+                className="p-3 sm:p-4 hover:bg-krds-gray-5 transition-colors"
+              >
                 <div className="flex items-start gap-2">
                   <Link
                     href={`/meeting/${m.mntsId}`}
                     className="block flex-1 min-w-0"
                   >
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-gray-500 mb-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-krds-gray-60 mb-1">
                       <span>{m.committeeName}</span>
-                      <span>·</span>
+                      <span aria-hidden="true">·</span>
                       <span>{m.date || "날짜 미상"}</span>
                       {m.summarizedAt && (
-                        <span className="sm:ml-auto text-green-700 font-medium">
+                        <span className="sm:ml-auto inline-flex items-center gap-1 rounded-krds bg-krds-primary-5 text-krds-primary-60 px-2 py-0.5 font-medium">
                           요약됨
                         </span>
                       )}
                     </div>
-                    <div className="text-sm sm:text-base font-medium break-keep">
+                    <div className="text-sm sm:text-base font-medium break-keep text-krds-gray-90">
                       {m.title}
                     </div>
                   </Link>
@@ -113,8 +118,10 @@ export default async function HomePage({
 }
 
 function chipClass(active: boolean) {
-  return `px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs sm:text-sm border ${
-    active ? "bg-black text-white border-black" : "bg-white text-gray-700"
+  return `px-3 py-1.5 rounded-krds text-xs sm:text-sm border font-medium transition-colors ${
+    active
+      ? "bg-krds-primary-50 text-white border-krds-primary-50"
+      : "bg-white text-krds-gray-70 border-krds-gray-20 hover:border-krds-primary-50 hover:text-krds-primary-60"
   }`;
 }
 
@@ -129,7 +136,7 @@ function CommitteeGroup({
 }) {
   return (
     <div className="mt-3">
-      <div className="text-[11px] sm:text-xs text-gray-500 mb-1.5 font-medium">
+      <div className="text-[11px] sm:text-xs text-krds-gray-50 mb-1.5 font-bold uppercase tracking-wide">
         {label}
       </div>
       <div className="flex flex-wrap gap-1.5 sm:gap-2">

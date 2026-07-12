@@ -48,55 +48,60 @@ export default function AddMeetingForm() {
   }
 
   return (
-    <section className="rounded-lg border bg-white p-3 sm:p-4">
-      <h2 className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
+    <section className="rounded-krds border border-krds-gray-10 bg-white p-4 sm:p-5">
+      <h2 className="text-base sm:text-lg font-bold mb-1 sm:mb-2 text-krds-gray-90">
         회의록 추가
       </h2>
-      <p className="text-xs sm:text-sm text-gray-600 mb-3">
+      <p className="text-xs sm:text-sm text-krds-gray-60 mb-3">
         <a
           href="https://kms.ggc.go.kr/svc/cms/mnts/MntsLatelyList.do"
           target="_blank"
           rel="noreferrer"
-          className="text-blue-600 hover:underline font-medium"
+          className="text-krds-primary-60 hover:text-krds-primary-70 hover:underline font-medium"
         >
           경기도의회 회의록 ↗
         </a>
         <span className="ml-1">
-          에서 뷰어 URL 또는 <code>mntsId</code> 값을 복사해 붙여넣으세요.
+          에서 뷰어 URL 또는 <code className="text-krds-gray-80">mntsId</code>{" "}
+          값을 복사해 붙여넣으세요.
         </span>
       </p>
       <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2">
+        <label htmlFor="meeting-input" className="sr-only">
+          회의록 URL 또는 mntsId
+        </label>
         <input
+          id="meeting-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="URL 또는 mntsId"
           inputMode="url"
           autoComplete="off"
-          // iOS Safari 확대 방지: 16px 이상
-          className="flex-1 border rounded px-3 py-2 text-base sm:text-sm"
+          className="flex-1 border border-krds-gray-20 rounded-krds px-3 py-2.5 text-base sm:text-sm bg-white focus:border-krds-primary-50 focus:ring-2 focus:ring-krds-primary-10 outline-none"
           required
         />
         <button
           type="submit"
           disabled={busy || !input}
-          className="rounded bg-black text-white px-4 py-2.5 sm:py-2 text-sm font-medium disabled:opacity-50"
+          className="rounded-krds bg-krds-primary-50 text-white px-4 py-2.5 text-sm font-bold hover:bg-krds-primary-60 disabled:bg-krds-gray-30 disabled:cursor-not-allowed transition-colors"
         >
           {busy ? "처리 중…" : "가져와서 요약"}
         </button>
       </form>
       {msg && (
         <div
-          className={`mt-3 rounded p-3 text-xs sm:text-sm break-words ${
+          className={`mt-3 rounded-krds p-3 text-xs sm:text-sm break-words ${
             errorCode
-              ? "border border-amber-300 bg-amber-50 text-amber-900"
-              : "text-gray-700"
+              ? "border border-krds-danger-50 bg-krds-danger-5 text-krds-danger-60"
+              : "text-krds-gray-70"
           }`}
+          role={errorCode ? "alert" : undefined}
         >
           {msg}
           {errorCode === "geo_blocked" && (
-            <div className="mt-2 text-[11px] sm:text-xs text-amber-800">
+            <div className="mt-2 text-[11px] sm:text-xs">
               💡 로컬 PC(한국 가정용 IP)에서 다음 명령 실행:
-              <pre className="mt-1 rounded bg-white/60 px-2 py-1 overflow-x-auto">
+              <pre className="mt-1 rounded-krds bg-white px-2 py-1 overflow-x-auto text-krds-gray-80 border border-krds-gray-10">
 {`cd gg-council-minutes
 npm run crawl:recent`}
               </pre>

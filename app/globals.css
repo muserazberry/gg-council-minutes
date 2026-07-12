@@ -1,12 +1,44 @@
+@import "./krds-tokens.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* KRDS 정부 서비스 표준 폰트 (Pretendard GOV) */
+@font-face {
+  font-family: "Pretendard GOV";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/PretendardGOV-Regular.subset.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Pretendard GOV";
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/PretendardGOV-Medium.subset.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Pretendard GOV";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/PretendardGOV-Bold.subset.woff2") format("woff2");
+}
 
 :root {
   color-scheme: light;
 }
 
-html, body {
-  background: #fafafa;
-  color: #111827;
+html,
+body {
+  background: var(--krds-color-light-gray-5);
+  color: var(--krds-color-light-gray-90);
+}
+
+/* 정부 서비스 표준 링크 포커스 링 */
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid var(--krds-color-light-primary-50);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

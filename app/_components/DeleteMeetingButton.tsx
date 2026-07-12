@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 
 interface Props {
   mntsId: string;
-  /** 텍스트 라벨. 생략하면 아이콘만 (목록용) */
   label?: string;
-  /** 삭제 성공 시 이동할 경로. 생략하면 현재 페이지 refresh (목록용) */
   redirectTo?: string;
 }
 
@@ -20,7 +18,6 @@ export default function DeleteMeetingButton({
   const router = useRouter();
 
   async function handleClick(e: React.MouseEvent) {
-    // 부모 <Link> 클릭 방지
     e.preventDefault();
     e.stopPropagation();
 
@@ -28,7 +25,6 @@ export default function DeleteMeetingButton({
       return;
     }
 
-    // PIN 은 세션 동안 재사용. 없거나 401 나면 다시 프롬프트.
     let pin = sessionStorage.getItem("delete_pin") ?? "";
     if (!pin) {
       pin = window.prompt("삭제 PIN 을 입력하세요") ?? "";
@@ -69,8 +65,8 @@ export default function DeleteMeetingButton({
       title="삭제"
       className={
         iconOnly
-          ? "shrink-0 rounded p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-40"
-          : "inline-flex items-center gap-1.5 rounded border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 disabled:opacity-40"
+          ? "shrink-0 rounded-krds p-1.5 text-krds-gray-40 hover:text-krds-danger-60 hover:bg-krds-danger-5 disabled:opacity-40 transition-colors"
+          : "inline-flex items-center gap-1.5 rounded-krds border border-krds-danger-50 bg-white px-4 py-2 text-sm text-krds-danger-60 font-medium hover:bg-krds-danger-5 disabled:opacity-40 transition-colors"
       }
     >
       <svg
