@@ -27,10 +27,26 @@ export default function DeleteMeetingButton({
     if (!window.confirm("이 회의록 요약을 삭제할까요? 되돌릴 수 없습니다.")) {
       return;
     }
+
+    // PIN 은 세션 동안 재사용. 없거나 401 나면 다시 프롬프트.
+    let pin = sessionStorage.getItem("delete_pin") ?? "";
+    if (!pin) {
+      pin = window.prompt("삭제 PIN 을 입력하세요") ?? "";
+      if (!pin) return;
+      sessionStorage.setItem("delete_pin", pin);
+    }
+
     setBusy(true);
     try {
-      const res = await fetch(`/api/meetings/${mntsId}`, { method: "DELETE" });
+      const res = await fetch(`/api/meetings/${mntsId}`, {
+        method: "DELETE",
+        headers: { "X-Delete-Pin": pin },
+      });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) {
+        sessionStorage.removeItem("delete_pin");
+        throw new Error("PIN 이 틀렸습니다. 다시 시도해 주세요.");
+      }
       if (!res.ok) throw new Error(data.error ?? "삭제 실패");
       if (redirectTo) {
         router.push(redirectTo);
