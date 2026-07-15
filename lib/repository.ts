@@ -3,23 +3,31 @@ import type { MeetingRaw, MeetingRecord, MeetingSummary } from "./types";
 
 export async function upsertMeeting(m: MeetingRaw): Promise<void> {
   const sb = getServerClient();
-  const { error } = await sb.from("meetings").upsert(
-    {
-      mnts_id: m.mntsId,
-      committee_code: m.committeeCode,
-      committee_name: m.committeeName,
-      session: m.session,
-      round: m.round,
-      meeting_date: m.date || null,
-      title: m.title,
-      body_text: m.bodyText,
-      video_url: m.videoUrl ?? null,
-      source_url: m.sourceUrl,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "mnts_id" }
-  );
+  const { data, error } = await sb
+    .from("meetings")
+    .upsert(
+      {
+        mnts_id: m.mntsId,
+        committee_code: m.committeeCode,
+        committee_name: m.committeeName,
+        session: m.session,
+        round: m.round,
+        meeting_date: m.date || null,
+        title: m.title,
+        body_text: m.bodyText,
+        video_url: m.videoUrl ?? null,
+        source_url: m.sourceUrl,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "mnts_id" }
+    )
+    .select("mnts_id");
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error(
+      "회의록 저장에 실패했습니다: 쓰기 권한이 없습니다. SUPABASE_SERVICE_ROLE_KEY 환경변수를 확인하세요."
+    );
+  }
 }
 
 export async function saveSummary(
@@ -27,15 +35,21 @@ export async function saveSummary(
   summary: MeetingSummary
 ): Promise<void> {
   const sb = getServerClient();
-  const { error } = await sb
+  const { data, error } = await sb
     .from("meetings")
     .update({
       summary,
       summarized_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     })
-    .eq("mnts_id", mntsId);
+    .eq("mnts_id", mntsId)
+    .select("mnts_id");
   if (error) throw error;
+  if (!data || data.length === 0) {
+    throw new Error(
+      "요약 저장에 실패했습니다: 해당 회의록을 찾지 못했거나 쓰기 권한이 없습니다. SUPABASE_SERVICE_ROLE_KEY 환경변수를 확인하세요."
+    );
+  }
 }
 
 export async function getMeeting(mntsId: string): Promise<MeetingRecord | null> {
