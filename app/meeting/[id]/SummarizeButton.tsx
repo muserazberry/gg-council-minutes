@@ -17,6 +17,20 @@ export default function SummarizeButton({ mntsId }: { mntsId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mntsId }),
       });
+
+      if (res.status === 504) {
+        throw new Error(
+          "요약 처리 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요."
+        );
+      }
+
+      const contentType = res.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          `서버 오류가 발생했습니다. (status ${res.status})`
+        );
+      }
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "요약 실패");
       router.refresh();

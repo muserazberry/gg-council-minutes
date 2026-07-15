@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { MeetingRaw, MeetingSummary } from "./types";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const MODEL = "claude-opus-4-7";
+const MODEL = "claude-sonnet-5";
 const MAX_INPUT_CHARS = 180_000; // 입력 안전 컷오프
 
 const SYSTEM = `당신은 경기도의회 회의록을 정확하게 요약하는 보조자입니다.
