@@ -9,7 +9,12 @@ const MAX_TOKENS = 4096;
 const SYSTEM = `당신은 경기도의회 회의록을 정확하게 요약하는 보조자입니다.
 반드시 record_meeting_summary 도구를 호출해 결과를 반환하고, 추측이나 외부지식은 더하지 마세요.
 회의록 본문에 없는 내용은 빈 배열/빈 문자열로 비워두세요.
-분량이 많은 회의는 memberStatements의 keyPoints를 인물당 최대 3개로, keyIssues의 description을 1~2문장으로 간결하게 유지하세요.`;
+응답은 항상 아래 상한을 지켜 간결하게 작성하세요 (발언·의원이 많은 회의일수록 반드시 상한을 지켜야 합니다):
+- memberStatements: 발언 비중이 큰 순으로 최대 10명까지만, 각 keyPoints는 최대 2개, 항목당 한 문장으로
+- keyIssues: 최대 6개까지만, 각 description은 1~2문장으로
+- agendaItems, decisions, upcomingSchedule: 각 항목 한 문장으로
+- overallSummary: 3~5문장
+- attendees/absentees 이름 목록은 상한 없이 원문 그대로 전부 포함`;
 
 const SUMMARY_TOOL: Anthropic.Tool = {
   name: "record_meeting_summary",
@@ -22,24 +27,30 @@ const SUMMARY_TOOL: Anthropic.Tool = {
       agendaItems: { type: "array", items: { type: "string" }, description: "안건 목록" },
       memberStatements: {
         type: "array",
+        description: "발언 비중이 큰 순으로 최대 10명",
         items: {
           type: "object",
           properties: {
             name: { type: "string" },
             role: { type: "string", description: "위원장|간사|위원 등" },
             party: { type: "string", description: "정당(있으면)" },
-            keyPoints: { type: "array", items: { type: "string" } },
+            keyPoints: {
+              type: "array",
+              description: "최대 2개, 각 한 문장",
+              items: { type: "string" },
+            },
           },
           required: ["name", "keyPoints"],
         },
       },
       keyIssues: {
         type: "array",
+        description: "최대 6개",
         items: {
           type: "object",
           properties: {
             topic: { type: "string" },
-            description: { type: "string" },
+            description: { type: "string", description: "1~2문장" },
           },
           required: ["topic", "description"],
         },
