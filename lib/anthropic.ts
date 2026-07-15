@@ -4,25 +4,61 @@ import type { MeetingRaw, MeetingSummary } from "./types";
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = "claude-sonnet-5";
 const MAX_INPUT_CHARS = 180_000; // 입력 안전 컷오프
+const MAX_TOKENS = 6000;
 
 const SYSTEM = `당신은 경기도의회 회의록을 정확하게 요약하는 보조자입니다.
-출력은 반드시 지정된 JSON 스키마 그대로만 반환하고, 추측이나 외부지식은 더하지 마세요.
-회의록 본문에 없는 내용은 빈 배열/빈 문자열로 비워두세요.`;
+반드시 record_meeting_summary 도구를 호출해 결과를 반환하고, 추측이나 외부지식은 더하지 마세요.
+회의록 본문에 없는 내용은 빈 배열/빈 문자열로 비워두세요.
+분량이 많은 회의는 memberStatements의 keyPoints를 인물당 최대 3개로, keyIssues의 description을 1~2문장으로 간결하게 유지하세요.`;
 
-const SCHEMA_HINT = `{
-  "attendees": ["출석 의원 이름 …"],
-  "absentees": ["불참 의원 이름 (확인 가능한 경우만)"],
-  "agendaItems": ["안건 1", "안건 2"],
-  "memberStatements": [
-    { "name": "의원명", "role": "위원장|간사|위원 등", "party": "정당(있으면)", "keyPoints": ["핵심 발언 1", "핵심 발언 2"] }
-  ],
-  "keyIssues": [
-    { "topic": "쟁점 제목", "description": "쟁점 내용 한 문단" }
-  ],
-  "decisions": ["가결/부결/계류 등 의결 결과"],
-  "upcomingSchedule": ["향후 일정 (소위·간담회·차기 회의 등)"],
-  "overallSummary": "회의 전체를 3~5문장으로 요약"
-}`;
+const SUMMARY_TOOL: Anthropic.Tool = {
+  name: "record_meeting_summary",
+  description: "분석한 경기도의회 회의록 요약을 구조화된 형태로 기록한다.",
+  input_schema: {
+    type: "object",
+    properties: {
+      attendees: { type: "array", items: { type: "string" }, description: "출석 의원 이름" },
+      absentees: { type: "array", items: { type: "string" }, description: "불참 의원 이름 (확인 가능한 경우만)" },
+      agendaItems: { type: "array", items: { type: "string" }, description: "안건 목록" },
+      memberStatements: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            role: { type: "string", description: "위원장|간사|위원 등" },
+            party: { type: "string", description: "정당(있으면)" },
+            keyPoints: { type: "array", items: { type: "string" } },
+          },
+          required: ["name", "keyPoints"],
+        },
+      },
+      keyIssues: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            topic: { type: "string" },
+            description: { type: "string" },
+          },
+          required: ["topic", "description"],
+        },
+      },
+      decisions: { type: "array", items: { type: "string" }, description: "가결/부결/계류 등 의결 결과" },
+      upcomingSchedule: { type: "array", items: { type: "string" }, description: "향후 일정 (소위·간담회·차기 회의 등)" },
+      overallSummary: { type: "string", description: "회의 전체를 3~5문장으로 요약" },
+    },
+    required: [
+      "attendees",
+      "agendaItems",
+      "memberStatements",
+      "keyIssues",
+      "decisions",
+      "upcomingSchedule",
+      "overallSummary",
+    ],
+  },
+};
 
 export async function summarizeMeeting(meeting: MeetingRaw): Promise<{
   summary: MeetingSummary;
@@ -38,25 +74,31 @@ export async function summarizeMeeting(meeting: MeetingRaw): Promise<{
 [회의록 본문]
 ${body}
 
-위 회의록을 분석해 아래 JSON 스키마에 맞춰 한국어로 요약해 주세요.
-반드시 JSON 객체만 출력하고 다른 설명은 붙이지 마세요.
-
-스키마:
-${SCHEMA_HINT}`;
+위 회의록을 분석해 record_meeting_summary 도구를 호출해 한국어로 요약해 주세요.`;
 
   const res = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: MAX_TOKENS,
     system: SYSTEM,
+    tools: [SUMMARY_TOOL],
+    tool_choice: { type: "tool", name: "record_meeting_summary" },
     messages: [{ role: "user", content: userMsg }],
   });
 
-  const text = res.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("");
+  if (res.stop_reason === "max_tokens") {
+    throw new Error(
+      `AI 응답이 최대 토큰(${MAX_TOKENS})을 초과해 잘렸습니다. 회의록 분량이 너무 많습니다.`
+    );
+  }
 
-  const summary = parseJsonLoose(text);
+  const toolUse = res.content.find(
+    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
+  );
+  if (!toolUse) {
+    throw new Error("AI 응답에서 요약 결과를 찾지 못했습니다.");
+  }
+
+  const summary = normalizeSummary(toolUse.input);
 
   return {
     summary,
@@ -65,12 +107,7 @@ ${SCHEMA_HINT}`;
   };
 }
 
-function parseJsonLoose(s: string): MeetingSummary {
-  const start = s.indexOf("{");
-  const end = s.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("AI 응답에서 JSON 못 찾음");
-  const slice = s.slice(start, end + 1);
-  const obj = JSON.parse(slice);
+function normalizeSummary(obj: any): MeetingSummary {
   return {
     attendees: obj.attendees ?? [],
     absentees: obj.absentees ?? [],
